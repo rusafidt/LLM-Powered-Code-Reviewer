@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LLM Code Explainer 🧑‍💻</title>
+  
+  <!-- Mermaid -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script> mermaid.initialize({ startOnLoad: false }); </script>
+
+  <!-- Prism.js for syntax highlighting -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.css">
+  <script src="https://cdn.jsdelivr.net/npm/prismjs/prism.js"></script>
+
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #111; color: #eee; }
+    h2 { color: #4cafef; }
+    .container { max-width: 900px; margin: auto; padding: 20px; background: #1c1c1c; border-radius: 12px; }
+    textarea { width: 100%; height: 200px; margin: 10px 0; border-radius: 8px; padding: 10px; font-family: monospace; }
+    .upload-box { margin: 10px 0; padding: 10px; background: #222; border: 1px dashed #4cafef; border-radius: 8px; }
+    .upload-box label { display: block; margin-bottom: 5px; font-weight: bold; color: #4cafef; }
+    input[type=file] { width: 100%; padding: 8px; background: #333; color: #eee; border-radius: 6px; }
+    button { padding: 8px 16px; background: #4cafef; color: white; border: none; border-radius: 6px; cursor: pointer; margin: 4px 0; }
+    button:hover { background: #3a9fd6; }
+    pre { background: #222; padding: 12px; border-radius: 8px; white-space: pre-wrap; }
+    .section { margin-top: 30px; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>LLM Code Explainer 🧑‍💻</h2>
+    <p>Paste code OR upload a file and get explanation + flow diagram + summary.</p>
+
+    <!-- Paste code -->
+    <textarea id="codeInput" placeholder="Paste your code here..."></textarea>
+
+    <!-- File upload -->
+    <div class="upload-box">
+      <label for="fileInput">Or upload a file:</label>
+      <input type="file" id="fileInput" accept=".py,.js,.java,.cpp,.ts,.go,.rb,.cs" />
+    </div>
+
+    <button onclick="explainCode()">Explain Code</button>
+
+    <!-- Explanation -->
+    <div class="section">
+      <div class="section-header">
+        <h3>Explanation</h3>
+        <button onclick="copyText('explanation')">📋 Copy</button>
+      </div>
+      <pre><code id="explanation" class="language-markdown"></code></pre>
+    </div>
+
+    <!-- Diagram -->
+    <div class="section">
+      <div class="section-header">
+        <h3>Flow Diagram</h3>
+        <button onclick="copyText('diagramRaw')">📋 Copy</button>
+      </div>
+      <div id="diagram"></div>
+      <pre id="diagramRaw" style="display:none;"></pre>
+    </div>
+
+    <!-- Summary -->
+    <div class="section">
+      <div class="section-header">
+        <h3>Summary</h3>
+        <button onclick="copyText('summary')">📋 Copy</button>
+      </div>
+      <pre><code id="summary" class="language-markdown"></code></pre>
+    </div>
+  </div>
+
+  <script>
+    async function explainCode() {
+      const codeText = document.getElementById("codeInput").value;
+      const fileInput = document.getElementById("fileInput").files[0];
+      const formData = new FormData();
+
+      if (fileInput) {
+        formData.append("file", fileInput);
+      } else if (codeText.trim() !== "") {
+        const blob = new Blob([codeText], { type: "text/plain" });
+        formData.append("file", blob, "input.py");
+      } else {
+        alert("Please paste code or upload a file.");
+        return;
+      }
+
+      const res = await fetch("/explain/", { method: "POST", body: formData });
+      const data = await res.json();
+
+      document.getElementById("explanation").textContent = data.explanation;
+      document.getElementById("summary").textContent = data.summary;
+      document.getElementById("diagramRaw").textContent = data.diagram;
+
+      const diagramEl = document.getElementById("diagram");
+      diagramEl.innerHTML = `<div class="mermaid">${data.diagram}</div>`;
+      mermaid.run({ querySelector: ".mermaid" });
+
+      Prism.highlightAll();
+    }
+
+    function copyText(id) {
+      const text = document.getElementById(id).textContent;
+      navigator.clipboard.writeText(text);
+      alert("Copied to clipboard!");
+    }
+  </script>
+</body>
+</html>
