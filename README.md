@@ -30,16 +30,16 @@ llm-code-explainer/
 └ ── index.html # Frontend (paste + file upload UI)
 
 ## ⚙️ Setup & Run
-1️⃣ Setup environment
+1️-> Setup environment
     conda create -n codeexplainer python=3.12 -y
     conda activate codeexplainer
     pip install -r requirements.txt
 
-2️⃣ Run backend
+2️-> Run backend
     uvicorn main:app --reload
 
-3️⃣ Open frontend
+3️-> Open frontend
 
-    Go to 👉 http://127.0.0.1:8000
+    Go to 👉 [http://127.0.0.1:8000](http://127.0.0.1:8000)
     Paste code or upload a file
     Get instant explanation + flow diagram + summary
