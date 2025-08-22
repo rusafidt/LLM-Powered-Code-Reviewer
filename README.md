@@ -32,19 +32,19 @@ llm-code-explainer/
 ---
 
 ## ⚙️ Setup & Run
-1️-> Setup environment
+### 1️-> Setup environment
 ```bash
 conda create -n codeexplainer python=3.12 -y
 conda activate codeexplainer
 pip install -r requirements.txt
 ```
 
-2️-> Run backend
+### 2️-> Run backend
 ```bash
 uvicorn main:app --reload
 ```
 
-3️-> Open frontend
-    Go to 👉 [http://127.0.0.1:8000](http://127.0.0.1:8000)  
-    Paste code or upload a file  
-    Get instant explanation + flow diagram + summary
+### 3️-> Open frontend  
+-> Go to 👉 [http://127.0.0.1:8000](http://127.0.0.1:8000)  
+-> Paste code or upload a file  
+-> Get instant explanation + flow diagram + summary
