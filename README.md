@@ -33,9 +33,11 @@ llm-code-explainer/
 
 ## ⚙️ Setup & Run
 1️-> Setup environment
+    ```bash
     conda create -n codeexplainer python=3.12 -y
     conda activate codeexplainer
     pip install -r requirements.txt
+    ```
 
 2️-> Run backend
     uvicorn main:app --reload
