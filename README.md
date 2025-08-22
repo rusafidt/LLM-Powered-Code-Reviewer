@@ -40,7 +40,9 @@ pip install -r requirements.txt
 ```
 
 2️-> Run backend
-    uvicorn main:app --reload
+```bash
+uvicorn main:app --reload
+```
 
 3️-> Open frontend
     Go to 👉 [http://127.0.0.1:8000](http://127.0.0.1:8000)  
