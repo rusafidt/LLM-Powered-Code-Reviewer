@@ -29,6 +29,8 @@ llm-code-explainer/
 └── static/
 └ ── index.html # Frontend (paste + file upload UI)
 
+---
+
 ## ⚙️ Setup & Run
 1️-> Setup environment
     conda create -n codeexplainer python=3.12 -y
