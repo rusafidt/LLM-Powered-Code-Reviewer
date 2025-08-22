@@ -39,7 +39,6 @@ llm-code-explainer/
     uvicorn main:app --reload
 
 3️-> Open frontend
-
     Go to 👉 [http://127.0.0.1:8000](http://127.0.0.1:8000)
     Paste code or upload a file
     Get instant explanation + flow diagram + summary
