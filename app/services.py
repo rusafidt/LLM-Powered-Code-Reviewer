@@ -1,72 +1,63 @@
-import ollama
+import os
 import re
+from huggingface_hub import InferenceClient
 
-MODEL_NAME = "llama3.2"
+# --- Config ---
+MODEL_NAME = "mistralai/Mistral-7B-Instruct-v0.2"
+HF_TOKEN = os.getenv("HF_TOKEN")  # set once:  $env:HF_TOKEN="hf_XXXX"
+
+# Create a single client (reuse across calls)
+_client = InferenceClient(token=HF_TOKEN)
 
 def code_explainer(code: str) -> dict:
     """
-    Send code to LLM and return explanation, diagram, and summary separately.
+    Send code to a hosted Hugging Face chat model and return
+    explanation, diagram, and summary separately.
     """
     prompt = f"""
-        You are a helpful code explainer.
-        Given the following code, provide output in this exact format:
+You are a helpful code explainer.
+Given the following code, provide output in this exact format:
 
-        ### Explanation
-        (step by step explanation)
+### Explanation
+(step by step explanation)
 
-        ### Diagram
-        (Mermaid diagram only, inside a code block. Rules:
-        - Start with 'graph LR'
-        - Use only '-->' for arrows
-        - Arrow labels must be written like: A -->|label| B
-        - Do NOT add extra characters like '>' after labels
-        - Do not include any text outside the diagram code block)
+### Summary
+(2–3 sentences)
 
-        ### Summary
-        (2–3 sentences)
+Code:
+{code}
+""".strip()
 
-        Code:
-        {code}
-        """
-
-
-    response = ollama.chat(
+    # Call HF chat-completions (model is exposed as a chat model)
+    resp = _client.chat_completion(
         model=MODEL_NAME,
         messages=[
             {"role": "system", "content": "You are an expert software explainer."},
-            {"role": "user", "content": prompt}
+            {"role": "user", "content": prompt},
         ],
+        max_tokens=2048,      # adjust as you like
+        temperature=0.2,
     )
 
-    content = response["message"]["content"]
+    content = resp.choices[0].message["content"]
 
     # Extract sections
     explanation = extract_section(content, "Explanation")
-    diagram = clean_mermaid(extract_section(content, "Diagram"))
     summary = extract_section(content, "Summary")
 
-    print(f'{diagram = }')
     return {
         "explanation": explanation.strip(),
-        "diagram": diagram.strip(),
-        "summary": summary.strip()
+        "summary": summary.strip(),
     }
 
-
 def extract_section(text: str, section: str) -> str:
-    """
-    Extract a section by header (### SectionName).
-    """
-    pattern = rf"### {section}\n([\s\S]*?)(?=###|\Z)"
-    match = re.search(pattern, text)
-    return match.group(1).strip() if match else ""
+    """Extract text between known section headers."""
+    sections = ["Explanation", "Summary"]  # add "Diagram" here if you use it
+    next_sections = [s for s in sections if s != section]
 
+    start_pat = rf"###\s*{re.escape(section)}\s*\n"
+    end_pat = r"\Z" if not next_sections else rf"(?=\n###\s*(?:{'|'.join(map(re.escape, next_sections))})\b|\Z)"
 
-def clean_mermaid(diagram: str) -> str:
-    """
-    Remove ```mermaid fences and fix common syntax issues.
-    """
-    text = diagram.replace("```mermaid", "").replace("```", "").strip()
-    # Fix common mistake: |label|>
-    text = re.sub(r"\|\s*([^|]+?)\s*\|>", r"|\1|", text)
-    return text
+    m = re.search(start_pat + r"([\s\S]*?)" + end_pat, text)
+    return m.group(1).strip() if m else ""
+

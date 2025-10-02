@@ -2,111 +2,298 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>LLM Code Explainer 🧑‍💻</title>
-  
-  <!-- Mermaid -->
-  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-  <script> mermaid.initialize({ startOnLoad: false }); </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLM Code Explainer</title>
 
-  <!-- Prism.js for syntax highlighting -->
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Prism for code highlight -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.css">
   <script src="https://cdn.jsdelivr.net/npm/prismjs/prism.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-javascript.min.js"></script>
+
+  <!-- Markdown + Mermaid -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: false, theme: 'default' });</script>
 
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background: #111; color: #eee; }
-    h2 { color: #4cafef; }
-    .container { max-width: 900px; margin: auto; padding: 20px; background: #1c1c1c; border-radius: 12px; }
-    textarea { width: 100%; height: 200px; margin: 10px 0; border-radius: 8px; padding: 10px; font-family: monospace; }
-    .upload-box { margin: 10px 0; padding: 10px; background: #222; border: 1px dashed #4cafef; border-radius: 8px; }
-    .upload-box label { display: block; margin-bottom: 5px; font-weight: bold; color: #4cafef; }
-    input[type=file] { width: 100%; padding: 8px; background: #333; color: #eee; border-radius: 6px; }
-    button { padding: 8px 16px; background: #4cafef; color: white; border: none; border-radius: 6px; cursor: pointer; margin: 4px 0; }
-    button:hover { background: #3a9fd6; }
-    pre { background: #222; padding: 12px; border-radius: 8px; white-space: pre-wrap; }
-    .section { margin-top: 30px; }
-    .section-header { display: flex; justify-content: space-between; align-items: center; }
+    :root{
+      --bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --panel: #ffffff;
+      --ink: #2d3748;
+      --muted:#718096;
+      --brand:#667eea;
+      --brand2:#764ba2;
+      --border:#e2e8f0;
+      --soft:#f7fafc;
+      --radius: 16px;
+      --shadow: 0 18px 45px rgba(0,0,0,.12);
+    }
+    *{ box-sizing: border-box; margin:0; padding:0 }
+    body{
+      min-height:100vh; background:var(--bg);
+      font-family:'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color:var(--ink); line-height:1.6;
+    }
+    .container{ max-width:1200px; margin:0 auto; padding:2rem }
+    .header{ text-align:center; margin: 0 0 2rem }
+    .header h1{
+      color:#fff; font-size:2.6rem; font-weight:800; letter-spacing:.2px;
+      text-shadow:0 2px 4px rgba(0,0,0,.18); margin-bottom:.5rem;
+    }
+    .header p{ color:rgba(255,255,255,.92) }
+
+    .card{
+      background:var(--panel); border-radius:var(--radius); box-shadow:var(--shadow);
+      overflow:hidden; margin-bottom:1.25rem; border:1px solid var(--border);
+    }
+    .input-section{ padding:1.5rem 1.5rem 1rem; border-bottom:1px solid var(--border); background:#fff }
+    .input-group{ margin-bottom:1rem }
+    label{ font-weight:600; color:#4a5568; display:block; margin-bottom:.5rem }
+    .code-input{
+      width:100%; min-height:180px; padding:1rem; border:2px solid var(--border);
+      border-radius:12px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size:14px; background:var(--soft); transition:.2s;
+    }
+    .code-input:focus{ outline:none; border-color:var(--brand); background:#fff; box-shadow:0 0 0 3px rgba(102,126,234,.12) }
+
+    .file-upload{ position:relative }
+    .file-upload input[type=file]{ position:absolute; inset:0; opacity:0; cursor:pointer }
+    .file-upload-label{
+      display:block; padding:1rem; border:2px dashed #cbd5e0; border-radius:12px; text-align:center;
+      background:var(--soft); color:#4a5568; transition:.2s; font-weight:500;
+    }
+    .file-upload-label:hover{ border-color:var(--brand); background:#edf2f7 }
+    .file-upload-label.dragover{ border-color:var(--brand); background:#e6fffa }
+
+    .generate-btn{
+      width:100%; padding:1rem 1.25rem; border:none; border-radius:12px; color:#fff; font-weight:700;
+      background:linear-gradient(135deg, var(--brand), var(--brand2)); cursor:pointer; transition:.15s;
+    }
+    .generate-btn:hover{ transform:translateY(-1px); box-shadow:0 10px 22px rgba(102,126,234,.28) }
+    .generate-btn:disabled{ opacity:.6; transform:none; cursor:not-allowed }
+
+    .loading{ display:none; text-align:center; padding:1.5rem; background:#fff }
+    .spinner{
+      width:38px; height:38px; margin:0 auto .75rem; border:4px solid #e2e8f0; border-top:4px solid var(--brand);
+      border-radius:50%; animation:spin 1s linear infinite;
+    }
+    @keyframes spin{ to { transform:rotate(360deg) } }
+
+    .results{ padding:1.25rem }
+    .results-grid{
+      display:grid; grid-template-columns:1fr; gap:1.25rem;
+    }
+    @media (min-width: 900px){
+      .results-grid{ grid-template-columns: 1fr 1fr }
+      .full{ grid-column:1 / -1 }
+    }
+
+    .section{
+      background:var(--soft); border:1px solid var(--border);
+      border-left:4px solid var(--brand); border-radius:12px; padding:1rem 1rem 1.25rem;
+    }
+    .section h3{
+      margin-bottom:.5rem; font-size:1.05rem; display:flex; align-items:center; justify-content:space-between;
+      color:#2d3748; letter-spacing:.2px;
+    }
+    .btn-copy{
+      background:var(--brand); color:#fff; border:none; padding:.45rem .75rem; border-radius:8px; font-size:.85rem; cursor:pointer;
+    }
+    .btn-copy:hover{ filter:brightness(1.05) }
+
+    /* Prose styles for readable text */
+    .prose{ font-size:1rem; color:#2d3748 }
+    .prose p{ margin: .5rem 0 }
+    .prose ul, .prose ol{ padding-left:1.2rem; margin:.5rem 0 }
+    .prose code{ background:#edf2f7; padding:.1rem .35rem; border-radius:6px }
+    .prose pre{ background:#2d3748; color:#e2e8f0; padding:1rem; border-radius:10px; overflow:auto }
+    .hidden{ display:none }
+    .fade-in{ animation: fade .35s ease-in }
+    @keyframes fade{ from{ opacity:0; transform:translateY(8px) } to{ opacity:1; transform:none } }
+
+    .toast{
+      position:fixed; top:1.25rem; right:1.25rem; z-index:9999; background:#48bb78; color:#fff;
+      padding:.75rem 1rem; border-radius:10px; box-shadow:var(--shadow); transform:translateX(400px); transition:.25s;
+    }
+    .toast.show{ transform:none }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>LLM Code Explainer 🧑‍💻</h2>
-    <p>Paste code OR upload a file and get explanation + flow diagram + summary.</p>
-
-    <!-- Paste code -->
-    <textarea id="codeInput" placeholder="Paste your code here..."></textarea>
-
-    <!-- File upload -->
-    <div class="upload-box">
-      <label for="fileInput">Or upload a file:</label>
-      <input type="file" id="fileInput" accept=".py,.js,.java,.cpp,.ts,.go,.rb,.cs" />
+    <div class="header">
+      <h1>🧑‍💻 LLM Code Explainer</h1>
+      <p>Understand complex code with AI-powered explanations, summaries, and (optional) diagrams</p>
     </div>
 
-    <button onclick="explainCode()">Explain Code</button>
+    <div class="card">
+      <div class="input-section">
+        <div class="input-group">
+          <label for="codeInput">Paste your code to explain:</label>
+          <textarea id="codeInput" class="code-input" placeholder="Paste your code here..."></textarea>
+        </div>
 
-    <!-- Explanation -->
-    <div class="section">
-      <div class="section-header">
-        <h3>Explanation</h3>
-        <button onclick="copyText('explanation')">📋 Copy</button>
-      </div>
-      <pre><code id="explanation" class="language-markdown"></code></pre>
-    </div>
+        <div class="input-group">
+          <div class="file-upload">
+            <input type="file" id="fileInput" accept=".py,.js,.java,.cpp,.ts,.go,.rb,.cs,.txt" />
+            <label for="fileInput" class="file-upload-label">
+              📁 Or upload a code file
+              <br><small style="color:#718096">Supports: .py, .js, .java, .cpp, .ts, .go, .rb, .cs, .txt</small>
+            </label>
+          </div>
+        </div>
 
-    <!-- Diagram -->
-    <div class="section">
-      <div class="section-header">
-        <h3>Flow Diagram</h3>
-        <button onclick="copyText('diagramRaw')">📋 Copy</button>
+        <button class="generate-btn" onclick="explainCode()">🔍 Explain Code</button>
       </div>
-      <div id="diagram"></div>
-      <pre id="diagramRaw" style="display:none;"></pre>
-    </div>
 
-    <!-- Summary -->
-    <div class="section">
-      <div class="section-header">
-        <h3>Summary</h3>
-        <button onclick="copyText('summary')">📋 Copy</button>
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Analyzing your code...</p>
       </div>
-      <pre><code id="summary" class="language-markdown"></code></pre>
+
+      <div class="results hidden" id="results">
+        <div class="results-grid">
+          <section class="section">
+            <h3>📖 Code Explanation <button class="btn-copy" onclick="copyRaw('#explanation')">Copy</button></h3>
+            <div id="explanation" class="prose" data-raw=""></div>
+          </section>
+
+          <section class="section">
+            <h3>✨ Summary <button class="btn-copy" onclick="copyRaw('#summary')">Copy</button></h3>
+            <div id="summary" class="prose" data-raw=""></div>
+          </section>
+
+          <section id="diagramCard" class="section full hidden">
+            <h3>🗺️ Diagram <button class="btn-copy" onclick="copyRaw('#diagramRaw')">Copy</button></h3>
+            <div id="diagram" class="prose"></div>
+            <!-- hold raw diagram text for copy -->
+            <pre id="diagramRaw" class="hidden"></pre>
+          </section>
+        </div>
+      </div>
     </div>
   </div>
 
+  <div class="toast" id="toast"></div>
+
   <script>
-    async function explainCode() {
-      const codeText = document.getElementById("codeInput").value;
-      const fileInput = document.getElementById("fileInput").files[0];
-      const formData = new FormData();
+    let isGenerating = false;
 
-      if (fileInput) {
-        formData.append("file", fileInput);
-      } else if (codeText.trim() !== "") {
-        const blob = new Blob([codeText], { type: "text/plain" });
-        formData.append("file", blob, "input.py");
-      } else {
-        alert("Please paste code or upload a file.");
-        return;
+    // Drag & drop hints
+    const fileLabel = document.querySelector('.file-upload-label');
+    fileLabel.addEventListener('dragover', e => { e.preventDefault(); fileLabel.classList.add('dragover'); });
+    fileLabel.addEventListener('dragleave', () => fileLabel.classList.remove('dragover'));
+    fileLabel.addEventListener('drop', e => {
+      e.preventDefault(); fileLabel.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length) { document.getElementById('fileInput').files = files; showToast('File selected'); }
+    });
+
+    async function explainCode(){
+      if (isGenerating) return;
+
+      const codeText = document.getElementById('codeInput').value.trim();
+      const file = document.getElementById('fileInput').files[0];
+      if(!codeText && !file){ showToast('Please paste code or upload a file.', 'error'); return; }
+
+      // UI state
+      isGenerating = true;
+      const btn = document.querySelector('.generate-btn');
+      const loading = document.getElementById('loading');
+      const results = document.getElementById('results');
+      btn.disabled = true; btn.textContent = '🔄 Analyzing...';
+      loading.style.display = 'block'; results.classList.add('hidden');
+
+      try{
+        let resp;
+        if (file){
+          const fd = new FormData(); fd.append('file', file);
+          resp = await fetch('/explain/', { method:'POST', body: fd });
+        }else{
+          resp = await fetch('/explain/text', {
+            method:'POST',
+            headers:{ 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: codeText })
+          });
+        }
+
+        const data = await resp.json();
+        if(!resp.ok){ throw new Error(data.detail || 'Failed to generate'); }
+
+        const result = data.result || data.explanation || data;
+        const exp = result.explanation || 'No explanation available.';
+        const summ = result.summary || 'No summary available.';
+        const diag = result.diagram; // optional
+
+        renderMarkdown('#explanation', exp);
+        renderMarkdown('#summary', summ);
+
+        // optional diagram
+        const diagCard = document.getElementById('diagramCard');
+        if (diag && diag.trim()){
+          await renderMermaid('#diagram', diag.trim());
+          document.getElementById('diagramRaw').textContent = diag.trim();
+          diagCard.classList.remove('hidden');
+        } else {
+          diagCard.classList.add('hidden');
+          document.getElementById('diagram').innerHTML = '';
+          document.getElementById('diagramRaw').textContent = '';
+        }
+
+        // show results
+        loading.style.display = 'none';
+        results.classList.remove('hidden'); results.classList.add('fade-in');
+        showToast('Code explained successfully!');
+      }catch(err){
+        console.error(err);
+        loading.style.display = 'none';
+        showToast(err.message || 'Failed to explain code', 'error');
+      }finally{
+        isGenerating = false;
+        btn.disabled = false; btn.textContent = '🔍 Explain Code';
       }
-
-      const res = await fetch("/explain/", { method: "POST", body: formData });
-      const data = await res.json();
-
-      document.getElementById("explanation").textContent = data.explanation;
-      document.getElementById("summary").textContent = data.summary;
-      document.getElementById("diagramRaw").textContent = data.diagram;
-
-      const diagramEl = document.getElementById("diagram");
-      diagramEl.innerHTML = `<div class="mermaid">${data.diagram}</div>`;
-      mermaid.run({ querySelector: ".mermaid" });
-
-      Prism.highlightAll();
     }
 
-    function copyText(id) {
-      const text = document.getElementById(id).textContent;
-      navigator.clipboard.writeText(text);
-      alert("Copied to clipboard!");
+    function renderMarkdown(selector, md){
+      const el = document.querySelector(selector);
+      el.dataset.raw = md;                        // keep raw for copy
+      el.innerHTML = marked.parse(md || '');      // render markdown
+      Prism.highlightAllUnder(el);                // highlight code blocks
     }
+
+    async function renderMermaid(selector, code){
+      // ensure it starts with graph LR if you enforce that on backend
+      return new Promise((resolve, reject)=>{
+        const id = 'm' + Math.random().toString(36).slice(2);
+        mermaid.render(id, code, (svgCode) => {
+          document.querySelector(selector).innerHTML = svgCode;
+          resolve();
+        }, document.querySelector(selector));
+      });
+    }
+
+    function copyRaw(selector){
+      const el = document.querySelector(selector);
+      const raw = el.dataset?.raw || el.textContent || '';
+      navigator.clipboard.writeText(raw).then(()=> showToast('Copied to clipboard!'))
+        .catch(()=> showToast('Copy failed', 'error'));
+    }
+
+    function showToast(msg, type='success'){
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.background = (type==='error') ? '#e53e3e' : '#48bb78';
+      t.classList.add('show');
+      setTimeout(()=> t.classList.remove('show'), 2800);
+    }
+
+    // textarea autosize + Ctrl+Enter
+    const ta = document.getElementById('codeInput');
+    ta.addEventListener('input', function(){ this.style.height='auto'; this.style.height = (this.scrollHeight)+'px'; });
+    ta.addEventListener('keydown', (e)=>{ if(e.ctrlKey && e.key==='Enter'){ explainCode(); }});
   </script>
 </body>
 </html>

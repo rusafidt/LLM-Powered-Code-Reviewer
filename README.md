@@ -1,50 +1,115 @@
 # 🧑‍💻 LLM Code Explainer
 
-LLM-powered tool that explains code with **step-by-step explanations**, **flow diagrams** (Mermaid), and **concise summaries**.  
-Supports both **pasting code** and **uploading files** through a simple web UI.  
+LLM-powered tool that explains code with **step-by-step explanations** and **concise summaries**.  
+Supports both **pasting code** and **uploading files** through a sleek web UI.  
 
 ---
 
 ## 🚀 Features
 - 🔍 Explain any code (Python, JS, Java, C++, etc.)
-- 📊 Auto-generate **flow diagrams** in Mermaid
-- ✍️ Produce **2–3 sentence summaries**
-- 🌐 Web frontend with **paste + file upload**
+- ✍️ Produce **detailed explanations** and **2–3 sentence summaries**
+- 🌐 Modern web frontend with **paste + file upload**
 - 📋 Copy-to-clipboard for all outputs
-- ⚡ FastAPI backend powered by **Ollama LLM**
+- ⚡ FastAPI backend powered by **Hugging Face LLM**
+- 🎨 Sleek, minimalistic design with responsive layout
 
 ---
 
 ## 🏗️ Project Structure
+```
 llm-code-explainer/
-│── main.py # FastAPI entrypoint
-│── requirements.txt # Dependencies
-│── README.md # This file
+├── main.py              # FastAPI entrypoint
+├── requirements.txt     # Dependencies
+├── render.yaml         # Render deployment config
+├── Procfile            # Alternative deployment
+├── README.md           # This file
 │
 ├── app/
-│ ├── routes.py # API endpoints (/explain)
-│ ├── services.py # LLM logic (Ollama prompt + cleaning)
-│ └── schemas.py # (placeholder for future models)
+│   ├── routes.py       # API endpoints (/explain)
+│   ├── services.py     # LLM logic (Hugging Face API)
+│   └── __init__.py
 │
 └── static/
-└ ── index.html # Frontend (paste + file upload UI)
+    └── index.html      # Frontend (modern UI)
+```
 
 ---
 
-## ⚙️ Setup & Run
-### 1️-> Setup environment
+## ⚙️ Local Setup & Run
+
+### 1️⃣ Setup environment
 ```bash
-conda create -n codeexplainer python=3.12 -y
-conda activate codeexplainer
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 2️-> Run backend
+### 2️⃣ Set up Hugging Face API Token
 ```bash
-uvicorn main:app --reload
+# Set your Hugging Face token
+export HF_TOKEN="your_huggingface_token_here"
 ```
 
-### 3️-> Open frontend  
--> Go to 👉 [http://127.0.0.1:8000](http://127.0.0.1:8000)  
--> Paste code or upload a file  
--> Get instant explanation + flow diagram + summary
+### 3️⃣ Run the application
+```bash
+# Method 1: Direct Python
+python main.py
+
+# Method 2: Uvicorn
+uvicorn main:app --reload --port 8000
+```
+
+### 4️⃣ Open frontend  
+👉 Go to [http://localhost:8000](http://localhost:8000)  
+👉 Paste code or upload a file  
+👉 Get instant explanation + summary
+
+---
+
+## 🔧 API Endpoints
+
+- `GET /` - Main web interface
+- `GET /healthz` - Health check
+- `GET /demo` - Demo with sample code
+- `GET /docs` - Interactive API documentation
+- `POST /explain/` - Upload file for explanation
+- `POST /explain/text` - Submit code text for explanation
+
+---
+
+## 🛠️ Development
+
+### Adding new features
+- **Backend**: Modify `app/routes.py` for new endpoints
+- **Frontend**: Update `static/index.html` for UI changes
+- **LLM Logic**: Customize prompts in `app/services.py`
+
+### Testing
+```bash
+# Test health endpoint
+curl http://localhost:8000/healthz
+
+# Test demo endpoint
+curl http://localhost:8000/demo
+```
+
+---
+
+## 🚀 Live Demo
+
+**Frontend:** [To-Do-List Link](https://ai-todo-frontend.onrender.com)
+
+---
+
+## 🤝 Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+---
+
+**Made with ❤️ using FastAPI + Hugging Face + Modern Web Technologies**

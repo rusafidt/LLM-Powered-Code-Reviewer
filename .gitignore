@@ -1,8 +1,56 @@
+# Python
 __pycache__/
 *.pyc
-.DS_Store
+*.pyo
+*.pyd
+.Python
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
 .env
 .venv/
+venv/
+ENV/
+env/
+
+# IDE
+.DS_Store
 .idea/
 .vscode/
+*.swp
+*.swo
+
+# Node.js
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Logs
+*.log
+app.log
+logs/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Deployment
+.env.local
+.env.production
+.env.staging
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+app.log
