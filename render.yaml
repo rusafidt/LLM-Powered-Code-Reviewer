@@ -3,10 +3,12 @@ services:
     name: llm-code-explainer
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
     startCommand: python main.py
     envVars:
       - key: HF_TOKEN
         sync: false
       - key: PORT
         value: 8000
+      - key: PYTHONUNBUFFERED
+        value: 1
