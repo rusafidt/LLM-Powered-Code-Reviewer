@@ -2,5 +2,5 @@ fastapi==0.111.0
 uvicorn==0.30.1
 pydantic==2.7.4
 requests==2.31.0
-huggingface_hub==0.25.0
+huggingface_hub==0.24.0
 python-multipart==0.0.20
