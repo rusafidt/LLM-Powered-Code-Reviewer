@@ -28,28 +28,18 @@ Code:
 {code}
 """.strip()
 
-    # Call HF text generation API
-    try:
-        # Try the newer chat completion API first
-        resp = _client.chat_completion(
-            model=MODEL_NAME,
-            messages=[
-                {"role": "system", "content": "You are an expert software explainer."},
-                {"role": "user", "content": prompt},
-            ],
-            max_tokens=2048,
-            temperature=0.2,
-        )
-        content = resp.choices[0].message["content"]
-    except AttributeError:
-        # Fallback to text generation API for older versions
-        content = _client.text_generation(
-            prompt=f"You are an expert software explainer.\n\n{prompt}",
-            model=MODEL_NAME,
-            max_new_tokens=2048,
-            temperature=0.2,
-            return_full_text=False
-        )
+    # Call HF chat-completions (model is exposed as a chat model)
+    resp = _client.chat_completion(
+        model=MODEL_NAME,
+        messages=[
+            {"role": "system", "content": "You are an expert software explainer."},
+            {"role": "user", "content": prompt},
+        ],
+        max_tokens=2048,      # adjust as you like
+        temperature=0.2,
+    )
+
+    content = resp.choices[0].message["content"]
 
     # Extract sections
     explanation = extract_section(content, "Explanation")
